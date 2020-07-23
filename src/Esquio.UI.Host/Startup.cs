@@ -55,6 +55,9 @@ namespace Esquio.UI.Host
                 .AddJwtBearer(options =>
                 {
                     Configuration.Bind("Security:Api", options);
+                    options.TokenValidationParameters.ValidateAudience = false;
+                    options.TokenValidationParameters.ValidateIssuerSigningKey = false;
+                    options.TokenValidationParameters.ValidateIssuer = false;
                 })
                 .AddPolicyScheme("secured", "Authorization Bearer or ApiKey", options =>
                 {
