@@ -54,7 +54,7 @@
             {
                 UserName = authenticationState.User.Identity.Name,
                 SubjectId = authenticationState.User.FindFirst("sub").Value,
-                ActAs = my.ActAs
+                ActAs = my?.ActAs
             };
 
             var policy = policyBuilder.Build(my);

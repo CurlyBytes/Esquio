@@ -1,4 +1,5 @@
-﻿using IdentityModel.Client;
+﻿using Esquio.UI.Host.Infrastructure.Options;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,8 @@ namespace Esquio.UI.Host.Infrastructure.OpenApi
 
         public void Configure(SwaggerGenOptions options)
         {
-            var discoveryDocument = GetDiscoveryDocument();
+            var security = _configuration.GetSection<Security>();
+            var discoveryDocument = GetDiscoveryDocument(security.Api);
 
             options.OperationFilter<AuthorizeOperationFilter>();
 
@@ -52,7 +54,7 @@ namespace Esquio.UI.Host.Infrastructure.OpenApi
                         TokenUrl = new Uri(discoveryDocument.TokenEndpoint),
                         Scopes = new Dictionary<string, string>
                         {
-                            { _configuration["Security:OpenId:Audience"] , "Esquio UI HTTP API" }
+                            { security.Api.Audience , "Esquio UI HTTP API" }
                         },
                     }
                 },
@@ -87,12 +89,19 @@ namespace Esquio.UI.Host.Infrastructure.OpenApi
             return info;
         }
 
-        private DiscoveryDocumentResponse GetDiscoveryDocument()
+        private DiscoveryDocumentResponse GetDiscoveryDocument(Options.Api options)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            var authority = _configuration["Security:OpenId:Authority"];
+            var request = new DiscoveryDocumentRequest
+            {
+                Address = options.Authority,
+                Policy = new DiscoveryPolicy
+                {
+                    ValidateEndpoints = options.ValidateEndpoints
+                }
+            };
 
-            var discoveryDocument = httpClient.GetDiscoveryDocumentAsync(authority)
+            var discoveryDocument = httpClient.GetDiscoveryDocumentAsync(request)
                 .GetAwaiter()
                 .GetResult();
 

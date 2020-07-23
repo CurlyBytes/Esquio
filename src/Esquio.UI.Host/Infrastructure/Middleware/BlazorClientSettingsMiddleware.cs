@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Esquio.UI.Host.Infrastructure.Options;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Net.Mime;
@@ -21,8 +22,7 @@ namespace Esquio.UI.Host.Infrastructure.Middleware
             if (context.Request.Path.StartsWithSegments(new PathString("/appsettings.json")))
             {
                 var securityOptions = new SetttingsResponse();
-                configuration.Bind("Security:OpenId", securityOptions.Security);
-
+                securityOptions.Security = configuration.GetSection<Security>().Client;
                 context.Response.ContentType = MediaTypeNames.Application.Json;
                 await context.Response.WriteAsync(
                     JsonSerializer.Serialize(securityOptions));
@@ -35,18 +35,7 @@ namespace Esquio.UI.Host.Infrastructure.Middleware
 
         private class SetttingsResponse
         {
-            public Security Security { get; set; } = new Security();
-        }
-
-        private class Security
-        {
-            public string ClientId { get; set; }
-
-            public string Authority { get; set; }
-
-            public string Audience { get; set; }
-
-            public string ResponseType { get; set; }
+            public Options.Client Security { get; set; } = new Options.Client();
         }
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Logging;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Linq;
 using System.Net.Mime;
@@ -22,6 +23,7 @@ namespace Esquio.UI.Host
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
+            IdentityModelEventSource.ShowPII = true;
             Configuration = configuration;
             Environment = env;
         }
@@ -34,6 +36,7 @@ namespace Esquio.UI.Host
             services
                 .AddHttpClient()
                 .AddCors()
+
                 .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>()
                 .AddSingleton<IDiscoverToggleTypesService, DiscoverToggleTypesService>()
                 .AddResponseCompression(options =>
@@ -51,7 +54,7 @@ namespace Esquio.UI.Host
                 .AddApiKey()
                 .AddJwtBearer(options =>
                 {
-                    Configuration.Bind("Security:OpenId", options);
+                    Configuration.Bind("Security:Api", options);
                 })
                 .AddPolicyScheme("secured", "Authorization Bearer or ApiKey", options =>
                 {
@@ -125,6 +128,4 @@ namespace Esquio.UI.Host
                  });
         }
     }
-
-
 }
